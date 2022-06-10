@@ -56,9 +56,13 @@ if let key = options.key {
         } else if let int64Value = Int64(value) {
             json[key] = int64Value
         } else if value.hasPrefix("[") && value.hasSuffix("]") {
-            let start = value.index(value.startIndex, offsetBy: 1)
-            let end = value.index(value.endIndex, offsetBy: -1)
-            json[key] = String(value[start...end]).replacingOccurrences(of: " ", with: "").components(separatedBy: ",")
+            if value.count == 2 {
+                json[key] = ""
+            } else {
+                let start = value.index(value.startIndex, offsetBy: 1)
+                let end = value.index(value.startIndex, offsetBy: value.count - 2)
+                json[key] = String(value[start...end]).replacingOccurrences(of: " ", with: "").components(separatedBy: ",")
+            }
         } else {
             json[key] = value
         }
@@ -192,7 +196,7 @@ struct SupportedConfig {
     let value: String
     let defaultValue: String
 
-    static let supportedKeyValues = [("mockAllModules", "false"), ("focusModules", "[]"), ("mockModules", "[]"), ("integrateSwiftLint", "false"), ("uploadBuildLog", "false"), ("keepAllTargets", "true"), ("previewMode", "false"), ("enableRemoteCache", "false"), ("remoteCacheProducer", "false"), ("remotePreviewResumeCacheProducer", "false")]
+    static let supportedKeyValues = [("mockAllModules", "false"), ("focusModules", "<null>"), ("mockModules", "[]"), ("integrateSwiftLint", "true"), ("uploadBuildLog", "false"), ("keepAllTargets", "true"), ("previewMode", "false"), ("enableRemoteCache", "false"), ("remoteCacheProducer", "false"), ("remotePreviewResumeCacheProducer", "false")]
 }
 
 extension SupportedConfig: TextTableRepresentable {
