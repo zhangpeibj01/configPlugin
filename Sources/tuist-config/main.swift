@@ -1,5 +1,6 @@
 import Foundation
 import ArgumentParser
+import SwiftyTextTable
 
 let path = FileManager.default.currentDirectoryPath + "/Tuist/config.json"
 let pathURL = URL(fileURLWithPath: path)
@@ -144,39 +145,30 @@ if
     !options.aid,
     let data = data,
     let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-
-    print("--------------------------current supported config--------------------------")
-    let supportedKeys = ["key", "mockAllModules", "focusModules", "mockModules", "integrateSwiftLint", "uploadBuildLog", "keepAllTargets", "previewMode", "enableRemoteCache", "remoteCacheProducer", "remotePreviewResumeCacheProducer"]
-    let keyNumberMaxCount = (supportedKeys.map { $0.count }.max() ?? 0) + 4
-    let realSupportedValues = supportedKeys.map { (value) -> String in
-        if let currentValue = json[value] {
-            if type(of: currentValue) == type(of: NSNumber(value: true)) {
-                return "true"
-            } else if type(of: currentValue) == type(of: NSNumber(value: false)) {
-                return "false"
-            } else if let array = currentValue as? [String] {
-                return array.joined(separator: ",")
+    var supportedTable = [SupportedConfig]()
+    SupportedConfig.supportedKeyValues.forEach { (supportedKey, supportedValue) in
+        let currentValue = { () -> String in
+            if let value = json[supportedKey] {
+                if type(of: value) == type(of: NSNumber(value: true)) {
+                    return "true"
+                } else if type(of: value) == type(of: NSNumber(value: false)) {
+                    return "false"
+                } else if let array = value as? [String] {
+                    return array.joined(separator: ",")
+                } else {
+                    return "\(value)"
+                }
             } else {
-                return "\(currentValue)"
+                return "<null>"
             }
-        } else {
-            return "<null>"
-        }
+        }()
+        supportedTable.append(SupportedConfig(name: supportedKey, value: currentValue, defaultValue: supportedValue))
     }
-    var supportedValues = ["value"]
-    supportedValues.append(contentsOf: realSupportedValues)
-    let valueNumberMaxCount = (supportedValues.map { $0.count }.max() ?? 0) + 4
-    let defaultedValues = ["defaultValue", "false", "[]", "[]", "false", "false", "true", "false", "false", "false", "false"]
-    let defaultedValueMaxCount = (defaultedValues.map { $0.count }.max() ?? 0)
-    supportedKeys.enumerated().forEach { (index, key) in
-        print("|\(key.padding(toLength: keyNumberMaxCount, withPad: " ", startingAt: 0))|\(supportedValues[index].padding(toLength: valueNumberMaxCount, withPad: " ", startingAt: 0))|\(defaultedValues[index].padding(toLength: defaultedValueMaxCount, withPad: " ", startingAt: 0))")
-    }
-    print("--------------------------current not supported config--------------------------")
-    var notSupportedKeys = ["key"]
-    var notSupportedValues = ["value"]
+    print(supportedTable.renderTextTable())
+
+    var notSupportedTable = [NotSupportedConfig]()
     json.forEach { (key, value) in
-        if !supportedKeys.contains(key) {
-            notSupportedKeys.append(key)
+        if !SupportedConfig.supportedKeyValues.map ({ $0.0 }).contains(key) {
             let newValue = { () -> String in
                 if type(of: value) == type(of: NSNumber(value: true)) {
                     return "true"
@@ -188,12 +180,50 @@ if
                     return "\(value)"
                 }
             }()
-            notSupportedValues.append(newValue)
+            notSupportedTable.append(NotSupportedConfig(name: key, value: newValue))
         }
     }
-    let notSupportedKeyNumberMaxCount = (notSupportedKeys.map { $0.count }.max() ?? 0) + 4
-    let notSupportedValueNumberMaxCount = (notSupportedValues.map { $0.count }.max() ?? 0) + 4
-    notSupportedKeys.enumerated().forEach { (index, key) in
-        print("|\(key.padding(toLength: notSupportedKeyNumberMaxCount, withPad: " ", startingAt: 0))|\(notSupportedValues[index].padding(toLength: notSupportedValueNumberMaxCount, withPad: " ", startingAt: 0))")
+    print(notSupportedTable.renderTextTable())
+}
+
+
+struct SupportedConfig {
+    let name: String
+    let value: String
+    let defaultValue: String
+
+    static let supportedKeyValues = [("mockAllModules", "false"), ("focusModules", "[]"), ("mockModules", "[]"), ("integrateSwiftLint", "false"), ("uploadBuildLog", "false"), ("keepAllTargets", "true"), ("previewMode", "false"), ("enableRemoteCache", "false"), ("remoteCacheProducer", "false"), ("remotePreviewResumeCacheProducer", "false")]
+}
+
+extension SupportedConfig: TextTableRepresentable {
+    static var columnHeaders: [String] {
+        return ["key", "value", "defaultValue"]
+    }
+
+    var tableValues: [CustomStringConvertible] {
+        return [name, value, defaultValue]
+    }
+
+    static var tableHeader: String? {
+      return "current supported config"
+    }
+}
+
+struct NotSupportedConfig {
+    let name: String
+    let value: String
+}
+
+extension NotSupportedConfig: TextTableRepresentable {
+    static var columnHeaders: [String] {
+        return ["key", "value"]
+    }
+
+    var tableValues: [CustomStringConvertible] {
+        return [name, value]
+    }
+
+    static var tableHeader: String? {
+      return "current not supported config"
     }
 }
