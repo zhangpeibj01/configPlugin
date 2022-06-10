@@ -55,9 +55,15 @@ if let key = options.key {
             json[key] = boolValue
         } else if let int64Value = Int64(value) {
             json[key] = int64Value
+        } else if key == "focusModules" || key == "mockModules" {
+            if value == "[]" {
+                json[key] = [String]()
+            } else {
+                json[key] = String(value).components(separatedBy: ",")
+            }
         } else if value.hasPrefix("[") && value.hasSuffix("]") {
             if value.count == 2 {
-                json[key] = ""
+                json[key] = [String]()
             } else {
                 let start = value.index(value.startIndex, offsetBy: 1)
                 let end = value.index(value.startIndex, offsetBy: value.count - 2)
@@ -228,6 +234,6 @@ extension NotSupportedConfig: TextTableRepresentable {
     }
 
     static var tableHeader: String? {
-      return "current not supported config"
+      return "others"
     }
 }
