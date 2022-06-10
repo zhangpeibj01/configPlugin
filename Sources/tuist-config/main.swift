@@ -151,10 +151,14 @@ if FileManager.default.fileExists(atPath: cachePath) {
     try FileManager.default.removeItem(atPath: cachePath)
 }
 
-if
-    !options.aid,
-    let data = data,
-    let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+if !options.aid {
+    let json = { () -> [String: Any] in
+        if let data = data {
+            return (try? JSONSerialization.jsonObject(with: data) as? [String: Any]) ?? [:]
+        } else {
+            return [:]
+        }
+    }()
     var supportedTable = [SupportedConfig]()
     SupportedConfig.supportedKeyValues.forEach { (supportedKey, supportedValue) in
         let currentValue = { () -> String in
