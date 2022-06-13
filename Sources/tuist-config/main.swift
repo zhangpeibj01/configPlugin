@@ -164,9 +164,8 @@ if !options.aid {
         let currentValue = { () -> String in
             if let value = json[supportedKey] {
                 if type(of: value) == type(of: NSNumber(value: true)) {
-                    return "true"
-                } else if type(of: value) == type(of: NSNumber(value: false)) {
-                    return "false"
+                    let result = value as? Bool ?? false
+                    return "\(result)"
                 } else if let array = value as? [String] {
                     return array.joined(separator: ",")
                 } else {
@@ -197,7 +196,9 @@ if !options.aid {
             notSupportedTable.append(NotSupportedConfig(name: key, value: newValue))
         }
     }
-    print(notSupportedTable.renderTextTable())
+    if !notSupportedTable.isEmpty {
+        print(notSupportedTable.renderTextTable())
+    }
 }
 
 
