@@ -93,9 +93,8 @@ if let key = options.key {
             if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
                 if let value = json[key] {
                     if type(of: value) == type(of: NSNumber(value: true)) {
-                        print("true")
-                    } else if type(of: value) == type(of: NSNumber(value: false)) {
-                        print("false")
+                        let result = value as? Bool ?? false
+                        print("\(result)")
                     } else {
                         print(value)
                     }
@@ -184,9 +183,8 @@ if !options.aid {
         if !SupportedConfig.supportedKeyValues.map ({ $0.0 }).contains(key) {
             let newValue = { () -> String in
                 if type(of: value) == type(of: NSNumber(value: true)) {
-                    return "true"
-                } else if type(of: value) == type(of: NSNumber(value: false)) {
-                    return "false"
+                    let result = value as? Bool ?? false
+                    return "\(result)"
                 } else if let array = value as? [String] {
                     return array.joined(separator: ",")
                 } else {
