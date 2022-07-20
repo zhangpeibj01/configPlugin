@@ -69,7 +69,7 @@ if let key = options.key {
             json[key] = boolValue
         } else if let int64Value = Int64(value) {
             json[key] = int64Value
-        } else if key == "focusModules" || key == "mockModules" {
+        } else if key == "focusModules" || key == "mockModules" || key == "additionalFocusModules" {
             if value == "[]" {
                 json[key] = [String]()
             } else {
