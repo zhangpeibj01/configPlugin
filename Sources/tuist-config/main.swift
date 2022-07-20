@@ -6,6 +6,20 @@ let path = FileManager.default.currentDirectoryPath + "/Tuist/config.json"
 let pathURL = URL(fileURLWithPath: path)
 var data: Data? { try? Data(contentsOf: pathURL) }
 
+let supportedFilePathURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath + "/Tuist/supportedConfig.json")
+var supportedInfoList: [SupportedInfo] {
+    if let data = try? Data(contentsOf: supportedFilePathURL) {
+        let result = try? JSONDecoder().decode([SupportedInfo].self, from: data)
+        return result ?? []
+    } else {
+        return []
+    }
+}
+var supportedKeyValues: [(String, String)] {
+    supportedInfoList.map { info in
+        return (info.name, "\(info.defaultValue)")
+    }
+}
 
 struct ConfigOptions: ParsableArguments {
 
@@ -159,7 +173,7 @@ if !options.aid {
         }
     }()
     var supportedTable = [SupportedConfig]()
-    SupportedConfig.supportedKeyValues.forEach { (supportedKey, supportedValue) in
+    supportedKeyValues.forEach { (supportedKey, supportedValue) in
         let currentValue = { () -> String in
             if let value = json[supportedKey] {
                 if type(of: value) == type(of: NSNumber(value: true)) {
@@ -180,7 +194,7 @@ if !options.aid {
 
     var notSupportedTable = [NotSupportedConfig]()
     json.forEach { (key, value) in
-        if !SupportedConfig.supportedKeyValues.map ({ $0.0 }).contains(key) {
+        if !supportedKeyValues.map ({ $0.0 }).contains(key) {
             let newValue = { () -> String in
                 if type(of: value) == type(of: NSNumber(value: true)) {
                     let result = value as? Bool ?? false
@@ -196,47 +210,5 @@ if !options.aid {
     }
     if !notSupportedTable.isEmpty {
         print(notSupportedTable.renderTextTable())
-    }
-}
-
-
-struct SupportedConfig {
-    let name: String
-    let value: String
-    let defaultValue: String
-
-    static let supportedKeyValues = [("mockAllModules", "false"), ("focusModules", "<null>"), ("mockModules", "[]"), ("integrateSwiftLint", "true"), ("uploadBuildLog", "false"), ("keepAllTargets", "true"), ("previewMode", "false"), ("enableRemoteCache", "false"), ("remoteCacheProducer", "false"), ("remotePreviewResumeCacheProducer", "false")]
-}
-
-extension SupportedConfig: TextTableRepresentable {
-    static var columnHeaders: [String] {
-        return ["key", "value", "defaultValue"]
-    }
-
-    var tableValues: [CustomStringConvertible] {
-        return [name, value, defaultValue]
-    }
-
-    static var tableHeader: String? {
-      return "current supported config"
-    }
-}
-
-struct NotSupportedConfig {
-    let name: String
-    let value: String
-}
-
-extension NotSupportedConfig: TextTableRepresentable {
-    static var columnHeaders: [String] {
-        return ["key", "value"]
-    }
-
-    var tableValues: [CustomStringConvertible] {
-        return [name, value]
-    }
-
-    static var tableHeader: String? {
-      return "others"
     }
 }
