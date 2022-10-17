@@ -173,8 +173,10 @@ if !options.aid {
         }
     }()
     var supportedTable = [SupportedConfig]()
+    var extraList = [ExtraInfo]()
+    let limitCount = 40
     supportedKeyValues.forEach { (supportedKey, supportedValue) in
-        let currentValue = { () -> String in
+        var currentValue = { () -> String in
             if let value = json[supportedKey] {
                 if type(of: value) == type(of: NSNumber(value: true)) {
                     let result = value as? Bool ?? false
@@ -188,9 +190,21 @@ if !options.aid {
                 return "<null>"
             }
         }()
-        supportedTable.append(SupportedConfig(name: supportedKey, value: currentValue, defaultValue: supportedValue))
+        if currentValue.count > 40 {
+            extraList.append(.init(key: "*\(supportedKey)CurrentValue", value: currentValue))
+            currentValue = "*\(supportedKey)CurrentValue"
+        }
+        var newSupportedValue = supportedValue
+        if newSupportedValue.count > 40 {
+            extraList.append(.init(key: "*\(supportedKey)SupportedValue", value: newSupportedValue))
+            newSupportedValue = "*\(supportedKey)SupportedValue"
+        }
+        supportedTable.append(SupportedConfig(name: supportedKey, value: currentValue, defaultValue: newSupportedValue))
     }
     print(supportedTable.renderTextTable())
+    extraList.forEach { extraInfo in
+        print("\(extraInfo.key): \(extraInfo.value)")
+    }
 
     var notSupportedTable = [NotSupportedConfig]()
     json.forEach { (key, value) in
