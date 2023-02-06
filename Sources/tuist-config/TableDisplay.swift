@@ -58,7 +58,7 @@ extension FocusState: TextTableRepresentable {
     }
 
     var tableValues: [CustomStringConvertible] {
-        return [focus, state ? "✅" : "❌"]
+        return [focus, state ? "✔️" : "✖️"]
     }
 
     static var tableHeader: String? {
@@ -78,7 +78,7 @@ extension NotSupportedFocusState: TextTableRepresentable {
     }
 
     var tableValues: [CustomStringConvertible] {
-        return [focus, state ? "✅" : "❌"]
+        return [focus, state ? "✔️" : "✖️"]
     }
 
     static var tableHeader: String? {
