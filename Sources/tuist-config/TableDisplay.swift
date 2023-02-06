@@ -46,3 +46,42 @@ extension NotSupportedConfig: TextTableRepresentable {
       return "others"
     }
 }
+
+struct FocusState {
+    let focus: String
+    let state: Bool
+}
+
+extension FocusState: TextTableRepresentable {
+    static var columnHeaders: [String] {
+        return ["moduleName", "focusState"]
+    }
+
+    var tableValues: [CustomStringConvertible] {
+        return [focus, state ? "✅" : "❌"]
+    }
+
+    static var tableHeader: String? {
+      return "focusModules"
+    }
+}
+
+
+struct NotSupportedFocusState {
+    let focus: String
+    let state: Bool
+}
+
+extension NotSupportedFocusState: TextTableRepresentable {
+    static var columnHeaders: [String] {
+        return ["moduleName", "focusState"]
+    }
+
+    var tableValues: [CustomStringConvertible] {
+        return [focus, state ? "✅" : "❌"]
+    }
+
+    static var tableHeader: String? {
+      return "NotSupportFocusModules"
+    }
+}

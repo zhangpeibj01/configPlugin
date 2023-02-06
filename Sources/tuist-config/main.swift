@@ -173,10 +173,44 @@ if !options.aid {
         }
     }()
     var supportedTable = [SupportedConfig]()
-    var extraList = [ExtraInfo]()
-    let limitCount = 40
+    var focusStates = [FocusState]()
+    var notSupportFocusStates = [NotSupportedFocusState]()
+    if
+        let focusModulesSupported = supportedInfoList.filter({ $0.name == "focusModules" }).first,
+        case . implictStringList(let focusModulesList) = focusModulesSupported.defaultValue
+    {
+        if let value = json["focusModules"] as? [String] {
+            focusStates = focusModulesList.map { focusModule in
+                .init(focus: focusModule, state: value.contains(focusModule))
+            }
+            notSupportFocusStates = value.compactMap { currentValue in
+                if !focusModulesList.contains(currentValue) {
+                    return .init(focus: currentValue, state: true)
+                } else {
+                    return nil
+                }
+            }
+        } else if let value = json["mockModules"] as? [String] {
+            focusStates = focusModulesList.map { focusModule in
+                .init(focus: focusModule, state: !value.contains(focusModule))
+            }
+            notSupportFocusStates = value.compactMap { currentValue in
+                if !focusModulesList.contains(currentValue) {
+                    return .init(focus: currentValue, state: false)
+                } else {
+                    return nil
+                }
+            }
+        }
+        if focusStates.isEmpty {
+            focusStates = focusModulesList.map { focusModule in
+                .init(focus: focusModule, state: true)
+            }
+        }
+    }
+
     supportedKeyValues.forEach { (supportedKey, supportedValue) in
-        var currentValue = { () -> String in
+        let currentValue = { () -> String in
             if let value = json[supportedKey] {
                 if type(of: value) == type(of: NSNumber(value: true)) {
                     let result = value as? Bool ?? false
@@ -190,21 +224,11 @@ if !options.aid {
                 return "<null>"
             }
         }()
-        if currentValue.count > 40 {
-            extraList.append(.init(key: "*\(supportedKey)CurrentValue", value: currentValue))
-            currentValue = "*\(supportedKey)CurrentValue"
+        if supportedKey != "focusModules" {
+            supportedTable.append(SupportedConfig(name: supportedKey, value: currentValue, defaultValue: supportedValue))
         }
-        var newSupportedValue = supportedValue
-        if newSupportedValue.count > 40 {
-            extraList.append(.init(key: "*\(supportedKey)SupportedValue", value: newSupportedValue))
-            newSupportedValue = "*\(supportedKey)SupportedValue"
-        }
-        supportedTable.append(SupportedConfig(name: supportedKey, value: currentValue, defaultValue: newSupportedValue))
     }
     print(supportedTable.renderTextTable())
-    extraList.forEach { extraInfo in
-        print("\(extraInfo.key): \(extraInfo.value)")
-    }
 
     var notSupportedTable = [NotSupportedConfig]()
     json.forEach { (key, value) in
@@ -225,4 +249,6 @@ if !options.aid {
     if !notSupportedTable.isEmpty {
         print(notSupportedTable.renderTextTable())
     }
+    print(focusStates.renderTextTable())
+    print(notSupportFocusStates.renderTextTable())
 }
