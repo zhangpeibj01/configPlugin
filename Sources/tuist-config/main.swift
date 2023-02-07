@@ -246,7 +246,7 @@ if !options.aid {
             notSupportedTable.append(NotSupportedConfig(name: key, value: newValue))
         }
     }
-    notSupportedTable = notSupportedTable.filter { $0.name == "mockModules" }
+    notSupportedTable = notSupportedTable.filter { $0.name != "mockModules" }
     if !notSupportedTable.isEmpty {
         print(notSupportedTable.renderTextTable())
     }
