@@ -246,9 +246,12 @@ if !options.aid {
             notSupportedTable.append(NotSupportedConfig(name: key, value: newValue))
         }
     }
+    notSupportedTable = notSupportedTable.filter { $0.name == "mockModules" }
     if !notSupportedTable.isEmpty {
         print(notSupportedTable.renderTextTable())
     }
     print(focusStates.renderTextTable())
-    print(notSupportFocusStates.renderTextTable())
+    if !notSupportFocusStates.isEmpty {
+        print(notSupportFocusStates.renderTextTable())
+    }
 }

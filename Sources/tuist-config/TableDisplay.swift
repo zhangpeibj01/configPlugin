@@ -54,7 +54,7 @@ struct FocusState {
 
 extension FocusState: TextTableRepresentable {
     static var columnHeaders: [String] {
-        return ["moduleName", "focusState"]
+        return ["moduleName", "isFocus"]
     }
 
     var tableValues: [CustomStringConvertible] {
@@ -74,7 +74,7 @@ struct NotSupportedFocusState {
 
 extension NotSupportedFocusState: TextTableRepresentable {
     static var columnHeaders: [String] {
-        return ["moduleName", "focusState"]
+        return ["moduleName", "isFocus"]
     }
 
     var tableValues: [CustomStringConvertible] {
